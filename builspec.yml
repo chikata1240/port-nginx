@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region ap-northeast-1)
+  build:
+    commands:
+      - echo Building the Docker image...
+      - docker image build --file Dockerfile . -t nginx:latest
+      - docker tag nginx:latest 245423107264.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:latest
+  post_build:
+    commands:
+      - echo Pushing the Docker image...
+      - docker push 245423107264.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"port-nginx-container","imageUri":"245423107264.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:latest"}]' > imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
